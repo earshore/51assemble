@@ -1,13 +1,12 @@
 51assemble
 ==========
 
-       This is a very simple assembler for 51 serials microcontrollers，and it's also 
+    This is a very simple assembler for 51 serials microcontrollers，and it's also 
     the first complete project I handled by my own.    
     Thanks to my classmates -- Deng and Gou, they gave me so much help, and then I 
     could get ideas to the project, sincerely thankyou so much.
     The project contains only one file, that is "51assemble.cpp"，and I'll optimize 
     it later in the rest of this month.
-
 
     Specification of program:
         Here is the perhaps the procedures of this program, first of all, read the source 
@@ -18,8 +17,8 @@
     instruction and the present address, also, you should get the label-form and Pseudo 
     instruction form, then you just need to output your data, but you should save your 
     data in character string first, and write the string into "obj.txt".
-    
-    
+
+
     程序说明：
     
         大概思路是这样的，用一个循环逐行读取源文件data.txt的每一行指令，将读取到的指令

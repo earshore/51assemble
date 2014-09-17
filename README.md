@@ -5,7 +5,7 @@
   
 	Thanks to my classmates -- Deng and Gou, they gave me so much help, and then Icould get ideas to the project, sincerely thankyou so much.
 
-The project contains only one file, that is 51assemble.cpp，and I'll optimize it later.
+        The project contains only one file, that is "51assemble.cpp"，and I'll optimize it later in the rest of this month.
 
 
 Specification of program:

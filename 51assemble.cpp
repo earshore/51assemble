@@ -8,14 +8,14 @@ using namespace std;
 class Inst
 {
 private:
-	int machcode;		//æœºå™¨ç 
-	int width;			//å­—èŠ‚æ•°
-	string label;		//æ ‡å·
-	string op_mne;		//åŠ©è®°ç¬¦
-	string op_num[3];	//æ“ä½œæ•°
+	int machcode;		//»úÆ÷Âë
+	int width;			//×Ö½ÚÊı
+	string label;		//±êºÅ
+	string op_mne;		//Öú¼Ç·û
+	string op_num[3];	//²Ù×÷Êı
 
 public:
-	Inst()				//æ„é€ å‡½æ•°åˆå§‹åŒ–
+	Inst()				//¹¹Ôìº¯Êı³õÊ¼»¯
 	{
 		machcode=-1;
 		width=0;
@@ -26,74 +26,78 @@ public:
 	~Inst()	
 	{
 	}
-	int get_machcode(string *s);				//è·å–æœºå™¨ç 
-	string get_mne(string s);				//è·å–åŠ©è®°ç¬¦
-	string get_op_num(string s, int i);		//è·å–æ“ä½œæ•°
-	string get_label(string s);				//è·å–æ ‡å·
-	int get_addr(string s);				//è·å–å½“å‰æŒ‡ä»¤åœ°å€
-	friend void get_obj(string s);		//è¾“å‡ºhexæ–‡ä»¶
-	string match(string s);								//ç»„åˆå­—ç¬¦ä¸²
-	string int_to_string(int t,int n);				//æ•´æ•°è½¬æ¢æˆå­—ç¬¦ä¸²
-	string get_checksum(string s);					//è·å¾—æ ¡éªŒç 
+	int get_machcode(string *s);				//»ñÈ¡»úÆ÷Âë
+	string get_mne(string s);				//»ñÈ¡Öú¼Ç·û
+	string get_op_num(string s, int i);		//»ñÈ¡²Ù×÷Êı
+	string get_label(string s);				//»ñÈ¡±êºÅ
+	int get_addr(string s);				//»ñÈ¡µ±Ç°Ö¸ÁîµØÖ·
+	friend void get_obj(string se);		//Êä³öhexÎÄ¼ş
+	string match(string machc);								//×éºÏ×Ö·û´®
+	string int_to_string(int t,int n);				//ÕûÊı×ª»»³É×Ö·û´®
+	int string_to_int(string s);		//×Ö·û´®×ªÕûÊı
+	string get_checksum(string machc);					//»ñµÃĞ£ÑéÂë
 };
-static int addr=0;				//åœ°å€
-static string mc;				//æœºå™¨ç å­—ç¬¦ä¸²
-static string cs;					//ç”¨æ¥è·å–æ ¡éªŒå’Œçš„å­—ç¬¦ä¸²
+static int addr=0;				//µØÖ·
+static int addr_s=0;
+static string mc;				//»úÆ÷Âë×Ö·û´®
+//static string checks;					//ÓÃÀ´»ñÈ¡Ğ£ÑéºÍµÄ×Ö·û´®
 
-void readasm(Inst inst);						//è¯»å–æºç¨‹åº
+void readasm(Inst inst);						//¶ÁÈ¡Ô´³ÌĞò
 
 
 int Inst::get_machcode(string *s)
 {
-	//è·å–æ”¹è¡ŒæŒ‡ä»¤å¯¹åº”çš„æœºå™¨ç 
+	//»ñÈ¡¸ÄĞĞÖ¸Áî¶ÔÓ¦µÄ»úÆ÷Âë
 	ifstream in("HEX.txt");
 	string filename;
 	string str,str1,str2,str3,st[5],sc[5],la[2];
-	//stræ˜¯è¯»å–å‡ºHEX.txtçš„ä¸€è¡Œå®Œæ•´æŒ‡ä»¤ï¼Œä¸å…è®¸ç ´å
-	//str1å‚¨å­˜æœºå™¨ç éƒ¨åˆ†
-	//str2å‚¨å­˜å­—èŠ‚å®½åº¦
-	//st[5]å‚¨å­˜æ“ä½œæ•°
-	//sc[5]å¤åˆ¶s[5]ï¼Œé˜²æ­¢s[5]ç ´å
-	//la[2]å­˜å‚¨ä¼ªæŒ‡ä»¤å’Œå…¶å¯¹åº”çš„åœ°å€
-	stringstream ss;
+	//strÊÇ¶ÁÈ¡³öHEX.txtµÄÒ»ĞĞÍêÕûÖ¸Áî£¬²»ÔÊĞíÆÆ»µ
+	//str1´¢´æ»úÆ÷Âë²¿·Ö
+	//str2´¢´æ×Ö½Ú¿í¶È
+	//st[5]´¢´æ²Ù×÷Êı
+	//sc[5]¸´ÖÆs[5]£¬·ÀÖ¹s[5]ÆÆ»µ
+	//la[2]´æ´¢Î±Ö¸ÁîºÍÆä¶ÔÓ¦µÄµØÖ·
+	//stringstream ss;
 	for(int n=0;n<5;n++)
 		sc[n]=s[n];
 	st[0]="\0";
 
-	if(in) // æœ‰è¯¥æ–‡ä»¶
+	if(in) // ÓĞ¸ÃÎÄ¼ş
 	{
-		while (getline (in, str)) // strä¸­ä¸åŒ…æ‹¬æ¯è¡Œçš„æ¢è¡Œç¬¦
+		while (getline (in, str)) // strÖĞ²»°üÀ¨Ã¿ĞĞµÄ»»ĞĞ·û
 		{
-			//é¦–å…ˆåˆ¤æ–­ä¼ªæŒ‡ä»¤
+			//Ê×ÏÈÅĞ¶ÏÎ±Ö¸Áî
 			if(sc[1]=="ORG")
 			{
 				sc[2]=s[2].substr(0,s[2].length()-1);
+				addr_s=atoi(sc[2].c_str());
+				//cout<<addr_s<<endl;
 				addr=atoi(sc[2].c_str());
 				la[0]=sc[1];
 				la[1]=sc[2];
-				
+
 			}
 			else if(sc[1]=="END")
 			{
 				la[0]=sc[1];
-				la[1]=int_to_string(addr,4);					//æ•´å‹æ•°è½¬å­—ç¬¦ä¸²
-				
+				la[1]=int_to_string(addr,4);					//ÕûĞÍÊı×ª×Ö·û´®
+
 			}
 			else
 			{
 
-				str2=str.substr(str.find(":")+1,1);								//æˆªæ–­è¯»å–åˆ°çš„ä¸€è¡Œå­—ç¬¦ä¸²ä¸­å­—èŠ‚é•¿åº¦éƒ¨åˆ†
-				str1=str.substr(0,2);													//æˆªæ–­è¯»å–åˆ°çš„ä¸€è¡Œå­—ç¬¦ä¸²ä¸­æœºå™¨ç éƒ¨åˆ†
-				str3=str.substr(str.find(":")+1,str.length());					//å…¶ä½™éƒ¨åˆ†
-				//	cout<<str<<endl;												//æ£€éªŒ
+				str2=str.substr(str.find(":")+1,1);								//½Ø¶Ï¶ÁÈ¡µ½µÄÒ»ĞĞ×Ö·û´®ÖĞ×Ö½Ú³¤¶È²¿·Ö
+				str1=str.substr(0,2);													//½Ø¶Ï¶ÁÈ¡µ½µÄÒ»ĞĞ×Ö·û´®ÖĞ»úÆ÷Âë²¿·Ö
+				str3=str.substr(str.find(":")+1,str.length());					//ÆäÓà²¿·Ö
+				//	cout<<str<<endl;												//¼ìÑé
 				str3=str3.substr(str3.find(":")+1,str3.length());
-				//cout<<str<<endl;													//æ£€éªŒ
+				//cout<<str<<endl;													//¼ìÑé
 
-				//å°†str1ï¼Œstr2ï¼Œå³æœºå™¨ç å’Œå­—èŠ‚é•¿åº¦ç”±å­—ç¬¦ä¸²æ•°ç»„è½¬æ¢ä¸ºåè¿›åˆ¶æ•°å­—
+				//½«str1£¬str2£¬¼´»úÆ÷ÂëºÍ×Ö½Ú³¤¶ÈÓÉ×Ö·û´®Êı×é×ª»»ÎªÊ®½øÖÆÊı×Ö
 				const char *t = str1.data();
 				const char *w=str2.data();
 				int i=0, tmp, result1=0,result2=0;
-				for(i=0; i<strlen(t); i++) /* æŠŠå­—ç¬¦ä¸€ä¸ªä¸€ä¸ªè½¬æˆ16è¿›åˆ¶æ•° */
+				for(i=0; i<strlen(t); i++) /* °Ñ×Ö·ûÒ»¸öÒ»¸ö×ª³É16½øÖÆÊı */
 				{
 					if((t[i]>='0')&&(t[i]<='9'))
 						tmp = t[i]-'0';
@@ -102,177 +106,176 @@ int Inst::get_machcode(string *s)
 					else if((t[i]>='a')&&(t[i]<='f'))
 						tmp = t[i]-'a'+10;
 					else
-						return -1;  /* å‡ºé”™äº† */
-					result1 = result1*16+tmp;  /* è½¬æˆ16è¿›åˆ¶æ•°ååŠ èµ·æ¥ */
+						return -1;  /* ³ö´íÁË */
+					result1 = result1*16+tmp;  /* ×ª³É16½øÖÆÊıºó¼ÓÆğÀ´ */
 				}
 				tmp=w[0]-'0';
-				result2 = result2*16+tmp;  /* è½¬æˆ16è¿›åˆ¶æ•°ååŠ èµ·æ¥ */
-				machcode=result1;							//æœºå™¨ç 
-				width=result2;									//å­—èŠ‚é•¿åº¦
-				//cout<<t<<"\t"<<result1<<"\t"<<result2<<endl;							//æ£€éªŒresult
-				
-				//åŒ¹é…æŒ‡ä»¤ï¼Œè¿”å›æœºå™¨ç 
+				result2 = result2*16+tmp;  /* ×ª³É16½øÖÆÊıºó¼ÓÆğÀ´ */
+				machcode=result1;							//»úÆ÷Âë
+				width=result2;									//×Ö½Ú³¤¶È
+				//cout<<t<<"\t"<<result1<<"\t"<<result2<<endl;							//¼ìÑéresult
+
+				//Æ¥ÅäÖ¸Áî£¬·µ»Ø»úÆ÷Âë
 				st[1]=str3.substr(0,str3.find(":"));
 				str3=str3.substr(str3.find(":")+1,str3.length());
 
-				if(sc[2]!="\0")																						//è‡³å°‘æœ‰ä¸€ä¸ªæ“ä½œæ•°
+				if(sc[2]!="\0")																						//ÖÁÉÙÓĞÒ»¸ö²Ù×÷Êı
 				{
 					st[2]=str3.substr(0,str3.find(":"));
 					str3=str3.substr(str3.find(":")+1,str3.length());
-					if(sc[3]!="\0")																					//è‡³å°‘æœ‰ä¸¤ä¸ªæ“ä½œæ•°
+					if(sc[3]!="\0")																					//ÖÁÉÙÓĞÁ½¸ö²Ù×÷Êı
 					{
 						st[3]=str3.substr(0,str3.find(":"));
 						str3=str3.substr(str3.find(":")+1,str3.length());
-						if(sc[4]!="\0")																				//æœ‰ä¸‰ä¸ªæ“ä½œæ•°
+						if(sc[4]!="\0")																				//ÓĞÈı¸ö²Ù×÷Êı
 						{
 							st[4]=str3.substr(0,str3.find(":"));
 							str3=str3.substr(str3.find(":")+1,str3.length());
-							if((st[1]==sc[1])&&(st[2]==sc[2])&&(st[3]==sc[3])&&(st[4]==sc[4]))		//åŒ¹é…
+							if((st[1]==sc[1])&&(st[2]==sc[2])&&(st[3]==sc[3])&&(st[4]==sc[4]))		//Æ¥Åä
 							{
 
-								//å»ºç«‹æ ‡å·è¡¨
+								//½¨Á¢±êºÅ±í
 								if(sc[0]!="\0")
 								{
 									la[0]=sc[0];
-									la[1]=int_to_string(addr,4);			//æ•´å‹æ•°è½¬å­—ç¬¦ä¸²
+									la[1]=int_to_string(addr,4);			//ÕûĞÍÊı×ª×Ö·û´®
 									//cout<<la[0]<<"\t"<<la[1]<<endl;
 								}
 								else
 								{}
 
 								//get_obj();
-								//	cout<<t<<"\t"<<result1<<"\t"<<result2<<"\t"<<addr<<endl;		//è¾“å‡ºåŒ¹é…çš„æŒ‡ä»¤çš„æœºå™¨ç å’Œå­—èŠ‚é•¿åº¦ä»¥åŠå½“å‰åœ°å€
+								//	cout<<t<<"\t"<<result1<<"\t"<<result2<<"\t"<<addr<<endl;		//Êä³öÆ¥ÅäµÄÖ¸ÁîµÄ»úÆ÷ÂëºÍ×Ö½Ú³¤¶ÈÒÔ¼°µ±Ç°µØÖ·
 								//cout<<sc[0]<<endl;
 								addr+=width;
 								mc+=str1;
-								//cout<<mc<<endl;				//æ£€éªŒæœºå™¨ç ä¸²
+								//cout<<mc<<endl;				//¼ìÑé»úÆ÷Âë´®
 								return machcode;
 							}
-							else													//	ä¸åŒ¹é…
+							else													//	²»Æ¥Åä
 							{}
 						}
-						else																							//æœ‰ä¸¤ä¸ªæ“ä½œæ•°
+						else																							//ÓĞÁ½¸ö²Ù×÷Êı
 						{
-							if((st[1]==sc[1])&&(st[2]==sc[2])&&(st[3]==sc[3]))							//åŒ¹é…
+							if((st[1]==sc[1])&&(st[2]==sc[2])&&(st[3]==sc[3]))							//Æ¥Åä
 							{	
-								//å»ºç«‹æ ‡å·è¡¨
+								//½¨Á¢±êºÅ±í
 								if(sc[0]!="\0")
 								{
 									la[0]=sc[0];
-									la[1]=int_to_string(addr,4);					//æ•´å‹æ•°è½¬å­—ç¬¦ä¸²
-									
-							//		cout<<la[0]<<"\t"<<la[1]<<endl;
+									la[1]=int_to_string(addr,4);					//ÕûĞÍÊı×ª×Ö·û´®
+
+									//		cout<<la[0]<<"\t"<<la[1]<<endl;
 								}
 								else
 								{}
 
 								//get_obj();
-						//		cout<<t<<"\t"<<result1<<"\t"<<result2<<"\t"<<addr<<endl;	//è¾“å‡ºåŒ¹é…çš„æŒ‡ä»¤çš„æœºå™¨ç å’Œå­—èŠ‚é•¿åº¦ä»¥åŠå½“å‰åœ°å€
+								//		cout<<t<<"\t"<<result1<<"\t"<<result2<<"\t"<<addr<<endl;	//Êä³öÆ¥ÅäµÄÖ¸ÁîµÄ»úÆ÷ÂëºÍ×Ö½Ú³¤¶ÈÒÔ¼°µ±Ç°µØÖ·
 								//cout<<sc[0]<<endl;
 								addr+=width;
 								mc+=str1;
-								//cout<<mc<<endl;				//æ£€éªŒæœºå™¨ç ä¸²
+								//cout<<mc<<endl;				//¼ìÑé»úÆ÷Âë´®
 								return machcode;
 							}
-							else													//	ä¸åŒ¹é…
+							else													//	²»Æ¥Åä
 							{}
 						}
 					}
-					else																							//åªæœ‰ä¸€ä¸ªæ“ä½œæ•°
+					else																							//Ö»ÓĞÒ»¸ö²Ù×÷Êı
 					{
-						if((st[1]==sc[1])&&st[2]==sc[2])				//åŒ¹é…
+						if((st[1]==sc[1])&&st[2]==sc[2])				//Æ¥Åä
 						{
 
-							//å»ºç«‹æ ‡å·è¡¨
+							//½¨Á¢±êºÅ±í
 							if(sc[0]!="\0")
 							{
 								la[0]=sc[0];
-								la[1]=int_to_string(addr,4);					//æ•´å‹æ•°è½¬å­—ç¬¦ä¸²
-								
-					//		cout<<la[0]<<"\t"<<la[1]<<endl;
+								la[1]=int_to_string(addr,4);					//ÕûĞÍÊı×ª×Ö·û´®
+
+								//		cout<<la[0]<<"\t"<<la[1]<<endl;
 							}
 							else
 							{}
 
 							//get_obj();
-					//	cout<<t<<"\t"<<result1<<"\t"<<result2<<"\t"<<addr<<endl;	//è¾“å‡ºåŒ¹é…çš„æŒ‡ä»¤çš„æœºå™¨ç å’Œå­—èŠ‚é•¿åº¦ä»¥åŠå½“å‰åœ°å€
+							//	cout<<t<<"\t"<<result1<<"\t"<<result2<<"\t"<<addr<<endl;	//Êä³öÆ¥ÅäµÄÖ¸ÁîµÄ»úÆ÷ÂëºÍ×Ö½Ú³¤¶ÈÒÔ¼°µ±Ç°µØÖ·
 							//	cout<<sc[0]<<endl;
 							addr+=width;
 							mc+=str1;
-							//cout<<mc<<endl;				//æ£€éªŒæœºå™¨ç ä¸²
+							//cout<<mc<<endl;				//¼ìÑé»úÆ÷Âë´®
 							return machcode;
 						}
-						else													//	ä¸åŒ¹é…
+						else													//	²»Æ¥Åä
 						{}
 					}
 				}
-				else																								//æ²¡æœ‰æ“ä½œæ•°
+				else																								//Ã»ÓĞ²Ù×÷Êı
 				{
-					if(st[1]==sc[1])										//åŒ¹é…									
+					if(st[1]==sc[1])										//Æ¥Åä									
 					{					
 
-						//å»ºç«‹æ ‡å·è¡¨
+						//½¨Á¢±êºÅ±í
 						if(sc[0]!="\0")
 						{
 							la[0]=sc[0];
-							la[1]=int_to_string(addr,4);					//æ•´å‹æ•°è½¬å­—ç¬¦ä¸²
-							
-				//		cout<<la[0]<<"\t"<<la[1]<<endl;
+							la[1]=int_to_string(addr,4);					//ÕûĞÍÊı×ª×Ö·û´®
+
+							//		cout<<la[0]<<"\t"<<la[1]<<endl;
 						}
 						else
 						{}
 
 						//get_obj();
-			//		cout<<t<<"\t"<<result1<<"\t"<<result2<<"\t"<<addr<<endl;	//è¾“å‡ºåŒ¹é…çš„æŒ‡ä»¤çš„æœºå™¨ç å’Œå­—èŠ‚é•¿åº¦ä»¥åŠå½“å‰åœ°å€
+						//		cout<<t<<"\t"<<result1<<"\t"<<result2<<"\t"<<addr<<endl;	//Êä³öÆ¥ÅäµÄÖ¸ÁîµÄ»úÆ÷ÂëºÍ×Ö½Ú³¤¶ÈÒÔ¼°µ±Ç°µØÖ·
 						//	cout<<sc[0]<<endl;
 						addr+=width;
 						mc+=str1;
-						//cout<<mc<<endl;				//æ£€éªŒæœºå™¨ç ä¸²
+						//cout<<mc<<endl;				//¼ìÑé»úÆ÷Âë´®
 						return machcode;
 					}
-					else														//ä¸åŒ¹é…
+					else														//²»Æ¥Åä
 					{}
 				}
 
 			}
 		}
 
-		//cout<<la[0]<<"\t"<<la[1]<<endl;				//è¾“å‡ºä¼ªæŒ‡ä»¤è¡¨
+		//cout<<la[0]<<"\t"<<la[1]<<endl;				//Êä³öÎ±Ö¸Áî±í
 
-		//æºæ–‡ä»¶ä¸­æ²¡æœ‰åŒ¹é…çš„æŒ‡ä»¤
+		//Ô´ÎÄ¼şÖĞÃ»ÓĞÆ¥ÅäµÄÖ¸Áî
 		//for(int i=0;i<=4;i++)
 		//{
 		//	cout<<s[i]<<"\t";
 		//}
-		//cout<<"è¿™æ¡ä¸åŒ¹é…"<<endl;
+		//cout<<"ÕâÌõ²»Æ¥Åä"<<endl;
 
-	}//whileç»“æŸ
+	}//while½áÊø
 
-	else // æ²¡æœ‰è¯¥æ–‡ä»¶
+	else // Ã»ÓĞ¸ÃÎÄ¼ş
 	{
-		cout << "æ‰“å¼€æ–‡ä»¶" << filename << "å‡ºé”™ï¼" << endl;
+		cout << "´ò¿ªÎÄ¼ş" << filename << "³ö´í£¡" << endl;
 		return -1;
 	}
 
-}//get_machcodeç»“æŸ
+}//get_machcode½áÊø
 
 string Inst::get_mne(string s)
 {
-	//è·å–åŠ©è®°ç¬¦
+	//»ñÈ¡Öú¼Ç·û
 	int i;
 	i=s.find(" ");
 	if(i!=-1)
 	{
 		op_mne=s.substr(0,i);
-		//cout<<"åŠ©è®°ç¬¦:"<<op_mne<<endl;							//è¾“å‡ºåŠ©è®°ç¬¦
+		//cout<<"Öú¼Ç·û:"<<op_mne<<endl;							//Êä³öÖú¼Ç·û
 		return op_mne;
 	}
 	else
 	{
 		op_mne=s;
-		//cout<<"åŠ©è®°ç¬¦:"<<op_mne<<endl;							//è¾“å‡ºåŠ©è®°ç¬¦
+		//cout<<"Öú¼Ç·û:"<<op_mne<<endl;							//Êä³öÖú¼Ç·û
 		return op_mne;
-
 	}
 }
 
@@ -284,15 +287,14 @@ string Inst::get_op_num(string s, int i)
 	if(j!=-1)
 	{
 		op_num[i]=s.substr(0,j);
-		//cout<<"æ“ä½œæ•°"<<i+1<<":"<<op_num[i]<<endl;					//è¾“å‡ºæ“ä½œæ•°
+		//cout<<"²Ù×÷Êı"<<i+1<<":"<<op_num[i]<<endl;					//Êä³ö²Ù×÷Êı
 		return op_num[i];	
 	}
 	else
 	{
-
 		//op_num[i]=s.substr(s.find(" "),s.length());
 		op_num[i]=s;
-		//cout<<"æ“ä½œæ•°"<<i+1<<":"<<op_num[i]<<endl;					//è¾“å‡ºæ“ä½œæ•°
+		//cout<<"²Ù×÷Êı"<<i+1<<":"<<op_num[i]<<endl;					//Êä³ö²Ù×÷Êı
 		return op_num[i];
 	}
 }
@@ -302,7 +304,7 @@ string Inst::get_label(string s)
 	int i;
 	i=s.find(":");
 	label=s.substr(0,i);
-	//	cout<<"æ ‡å·:"<<label<<endl;
+	//	cout<<"±êºÅ:"<<label<<endl;
 	return label;
 
 }
@@ -310,45 +312,45 @@ string Inst::get_label(string s)
 
 void readasm(Inst inst)
 {
-	string filename = "data.txt";					//æºæ–‡ä»¶
+	string filename = "data.txt";					//Ô´ÎÄ¼ş
 	ifstream fin(filename.c_str());  
-	if( !fin )													//é˜²é”™
+	if( !fin )													//·À´í
 	{   
-		cout << "æ‰“å¼€æ–‡ä»¶" << filename << "å‡ºé”™ï¼" << endl;   
+		cout << "´ò¿ªÎÄ¼ş" << filename << "³ö´í£¡" << endl;   
 		exit(-1);
 	}
-	string str,s[5],sn[5],tmp[5];						//strå‚¨å­˜è¯»å–çš„æ¯è¡Œå­—ç¬¦ä¸²ï¼Œs[]ä¿å­˜æˆªæ–­çš„æ¯éƒ¨åˆ†
+	string str,s[5],sn[5],tmp[5];						//str´¢´æ¶ÁÈ¡µÄÃ¿ĞĞ×Ö·û´®£¬s[]±£´æ½Ø¶ÏµÄÃ¿²¿·Ö
 	int i;
 	while(std::getline(fin,str))
 	{
 
-		if(str.find(":")!=-1)								//å¦‚æœæœ‰æ ‡å·
+		if(str.find(":")!=-1)								//Èç¹ûÓĞ±êºÅ
 		{
-			s[0]=inst.get_label(str);							//è·å–æ ‡å·
-			str=str.substr(str.find(":")+1,str.length());	//æˆªå–":"åçš„å­—ç¬¦ä¸²
+			s[0]=inst.get_label(str);							//»ñÈ¡±êºÅ
+			str=str.substr(str.find(":")+1,str.length());	//½ØÈ¡":"ºóµÄ×Ö·û´®
 		}
 		else
 		{
 			s[0]="\0";
 		}
-		s[1]=inst.get_mne(str);									//å…ˆè·å–åŠ©è®°ç¬¦
-		if(str.find(" ")!=-1)											//å¦‚æœæœ‰æ“ä½œæ•°
+		s[1]=inst.get_mne(str);									//ÏÈ»ñÈ¡Öú¼Ç·û
+		if(str.find(" ")!=-1)											//Èç¹ûÓĞ²Ù×÷Êı
 		{
-			str=str.substr(str.find(" ")+1,str.length());	//æˆªå–" "åçš„å­—ç¬¦ä¸²
-			if(str.find(",")!=-1)										//å¦‚æœæœ‰ä¸æ­¢ä¸€ä¸ªæ“ä½œæ•°
+			str=str.substr(str.find(" ")+1,str.length());	//½ØÈ¡" "ºóµÄ×Ö·û´®
+			if(str.find(",")!=-1)										//Èç¹ûÓĞ²»Ö¹Ò»¸ö²Ù×÷Êı
 			{
-				s[2]=inst.get_op_num(str,0);						//è·å–ç¬¬ä¸€æ“ä½œæ•°
-				str=str.substr(str.find(",")+1,str.length());	//æˆªå–","åçš„å­—ç¬¦ä¸²
-				if(str.find(",")!=-1)										//å¦‚æœæœ‰ä¸‰ä¸ªæ“ä½œæ•°
+				s[2]=inst.get_op_num(str,0);						//»ñÈ¡µÚÒ»²Ù×÷Êı
+				str=str.substr(str.find(",")+1,str.length());	//½ØÈ¡","ºóµÄ×Ö·û´®
+				if(str.find(",")!=-1)										//Èç¹ûÓĞÈı¸ö²Ù×÷Êı
 				{
-					s[3]=inst.get_op_num(str,1);					//è·å–ç¬¬äºŒæ“ä½œæ•°
-					str=str.substr(str.find(",")+1,str.length());	//æˆªå–","åçš„å­—ç¬¦ä¸²
-					s[4]=inst.get_op_num(str,2);						//è·å–ç¬¬ä¸‰æ“ä½œæ•°
+					s[3]=inst.get_op_num(str,1);					//»ñÈ¡µÚ¶ş²Ù×÷Êı
+					str=str.substr(str.find(",")+1,str.length());	//½ØÈ¡","ºóµÄ×Ö·û´®
+					s[4]=inst.get_op_num(str,2);						//»ñÈ¡µÚÈı²Ù×÷Êı
 				}
 				else
 				{
 					s[4]="\0";
-					s[3]=inst.get_op_num(str,1);						//è·å–ç¬¬äºŒæ“ä½œæ•°
+					s[3]=inst.get_op_num(str,1);						//»ñÈ¡µÚ¶ş²Ù×÷Êı
 
 				}
 			}
@@ -356,7 +358,7 @@ void readasm(Inst inst)
 			{
 				s[3]="\0";
 				s[4]="\0";
-				s[2]=inst.get_op_num(str,0);							//è·å–ç¬¬ä¸€æ“ä½œæ•°
+				s[2]=inst.get_op_num(str,0);							//»ñÈ¡µÚÒ»²Ù×÷Êı
 			}
 		}
 		else
@@ -371,7 +373,7 @@ void readasm(Inst inst)
 		{
 			if(sn[i]!="\0")
 			{
-				//å°†åœ°å€è½¬æ¢ä¸ºargï¼Œæ–¹ä¾¿åŒ¹é…HEX.txtå†…çš„æ¯ä¸€è¡ŒæŒ‡ä»¤
+				//½«µØÖ·×ª»»Îªarg£¬·½±ãÆ¥ÅäHEX.txtÄÚµÄÃ¿Ò»ĞĞÖ¸Áî
 				if((sn[i]=="A")||(sn[i]=="B")||(sn[i]=="C")||(sn[i]=="AB")||(sn[i]=="DPTR")||(sn[i][0]=='R'))
 				{}
 				else if((sn[i][0]=='@')||(sn[i][0]=='/'))
@@ -399,7 +401,7 @@ void readasm(Inst inst)
 
 		}
 
-		//for(i=0;i<=4;i++)						//æ£€éªŒsn[]
+		//for(i=0;i<=4;i++)						//¼ìÑésn[]
 		//{
 		//		cout<<sn[i]<<"\t";
 		//}
@@ -410,7 +412,7 @@ void readasm(Inst inst)
 			sn[i]=s[i];
 			s[i]=tmp[i];
 		}
-		//for(i=0;i<=4;i++)					//æ£€éªŒs[]
+		//for(i=0;i<=4;i++)					//¼ìÑés[]
 		//{
 		//	cout<<s[i]<<"\t";
 		//}
@@ -421,11 +423,12 @@ void readasm(Inst inst)
 
 }
 
-string Inst::int_to_string(int t, int n)					//å°†æ•´æ•°è½¬ä¸ºå­—ç¬¦ä¸²ï¼Œå¯ä»¥è®¾ç½®ä»»æ„é•¿åº¦ï¼Œæ–¹ä¾¿åœ°å€å’Œæœºå™¨ç ä¸¤ç§é•¿åº¦
+//½«Ê®½øÖÆÕûÊı×ªÎªÊ®Áù½øÖÆ×Ö·û´®£¬¿ÉÒÔÉèÖÃÈÎÒâ³¤¶È£¬·½±ãµØÖ·ºÍ»úÆ÷ÂëÁ½ÖÖ³¤¶È
+string Inst::int_to_string(int t, int n)					//tÊÇÊı¾İ£¬nÊÇ¿í¶È
 {
 	stringstream ss;
 	string str;
-	ss<<hex<<t;
+	ss<<hex<<t;							//½«Ê®½øÖÆÕûÊıÊäÈëºó×ªÎªÊ®Áù½øÖÆ
 	ss>>str;
 	for(int i=1;i<=n;i++)
 	{
@@ -435,80 +438,131 @@ string Inst::int_to_string(int t, int n)					//å°†æ•´æ•°è½¬ä¸ºå­—ç¬¦ä¸²ï¼Œå¯ä»¥
 		}
 		else if(str.length()>n)
 		{
-			cout<<"error"<<endl;
+			cout<<"ÕûÊıÌ«´ó£¬³¬³ö×ª»»¿í¶È£¡"<<endl;
 			exit(-1);
 		}
 		else
 		{}
 	}
-	transform(str.begin(), str.end(), str.begin(), toupper);				//è½¬æ¢ä¸ºå¤§å†™
-//	cout<<str<<endl;
+	transform(str.begin(), str.end(), str.begin(), toupper);				//×ª»»Îª´óĞ´
+//	cout<<str<<endl;				//Ğ£ÑéÊä³ö
 	return str;
 }
 
-string Inst::match(string s)
+int Inst::string_to_int(string s)
 {
-	string sen,tmp;
+	const char *t = s.data();
+	//cout<<s<<endl;			//Ğ£ÑéÊäÈë
+	int i=0, tmp, result=0;
+	for(i=0; i<strlen(t); i++) /* °Ñ×Ö·ûÒ»¸öÒ»¸ö×ª³É16½øÖÆÊı */
+	{
+		if((t[i]>='0')&&(t[i]<='9'))
+			tmp = t[i]-'0';
+		else if((t[i]>='A')&&(t[i]<='F'))
+			tmp = t[i]-'A'+10;
+		else if((t[i]>='a')&&(t[i]<='f'))
+			tmp = t[i]-'a'+10;
+		else
+		{
+			cout<<"³ö´íÁË"<<endl;
+			exit(-1);
+			//return -1;  /* ³ö´íÁË */       //ÕâÀï²»ÄÜ·µ»Ø-1£¡£¡£¡
+		}
+		//cout<<t[i]<<endl;				//¼ìÑét[i]
+		result= result*16+tmp;  /* ×ª³É16½øÖÆÊıºó¼ÓÆğÀ´ */
+	}
+	//cout<<s<<"\t"<<result<<endl;						//Ğ£Ñé½á¹û
+	return result;
+}
+
+string Inst::match(string machc)				//Æ´½Ó×Ö·û´®
+{
+	string sen,tmp;							//sen´æ´¢Ò»ĞĞ£¬tmpÁÙÊ±
 	int w;
-	w=s.length();
-	tmp=int_to_string(w,2);
-	sen.append(tmp);
-	tmp=int_to_string(addr,4);
-	sen.append(tmp);
-	sen.append("00");
-	//sen.append(mc);
-	//cout<<sen<<endl;								//æ£€éªŒå‰æ®µ8ä¸ªå­—ç¬¦
+	w=machc.length();					//¼ÆËã»úÆ÷Âë×Ö½Ú³¤¶È
+	tmp=int_to_string(w,2);				//×ª»»³¤¶ÈÎª×Ö·û´®
+	sen.append(tmp);						//¼ÓÈë×Ö½Ú³¤¶È
+	//cout<<addr_s<<endl;
+	//cout<<addr<<endl;
+	tmp=int_to_string(addr_s,4);		//½«ÆğÊ¼µØÖ·×ª»»Îª×Ö·û´®
+	sen.append(tmp);						//¼ÓÈëÆğÊ¼µØÖ·
+	sen.append("00");						//¼ÓÈëÊı¾İÀàĞÍ
+	sen.append(machc);						//¼ÓÈë»úÆ÷Âë
+	sen.append(get_checksum(machc));
+	cout<<sen<<endl;								//¼ìÑéÇ°¶Î8¸ö×Ö·û
 	return sen;
 }
 
-string Inst::get_checksum(string s)			//æ ¡éªŒå’Œ
+string Inst::get_checksum(string machc)			//»ñµÃĞ£ÑéºÍ£¬sÊÇ»úÆ÷Âë
 {
 	int n,i=0;
-	string s1,s2,str[100];
-	s1=int_to_string(	s.length(),2);
-	s2=int_to_string(addr,4);
-	s=s1+s2+"00"+s;
-	n=s.length();
-	//	cout<<s.substr(0,2)<<"\t"<<n<<endl;
-	//cout<<mc<<endl;					//æ£€éªŒæœºå™¨ç ä¸²
-	for(i=0;i<(n/2);i++)
+	string s1,s2,str[100],checks,tmps;
+	int val[100];
+	int j=0,tmp=0, result=0;
+	s1=int_to_string(machc.length(),2);						//±íÊ¾ÓĞĞ§Êı¾İ×Ö½ÚÊıµÄÁ½¸ö×Ö·û
+	s2=int_to_string(addr_s,4);							//±íÊ¾ÆğÊ¼µØÖ·µÄËÄ¸ö×Ö·û
+	tmps=s1+s2+"00"+machc;										//Ç°Ãæ8¸ö×Ö·ûÍâ¼Ó»úÆ÷Âë
+	n=tmps.length();
+
+	//cout<<tmps.substr(0,2)<<"\t"<<s1<<endl;	//¼ìÑés1
+	//cout<<s2<<"\t"<<addr_s<<"\t"<<hex<<addr_s<<endl;			//¼ìÑéÆäÊµµØÖ·
+	//cout<<s<<endl;					//¼ìÑé»úÆ÷Âë´®
+	//cout<<tmps<<"\t"<<tmps.length()<<endl;					//¼ìÑéĞĞ×Ö·û´®£¬´Ë´¦tmpsÓ¦¸ÃÊÇÒ»ĞĞ×Ö·û´®ÒÔ¼°Æä³¤¶È
+
+	for(i=0;i<(n/2);i++)									
 	{
-		str[i]=s.substr(0,2);
-		//cout<<s.substr(0,2);				//æ£€éªŒæˆªæ–­æƒ…å†µ
-		s=s.substr(2,s.length());
-	//	cout<<str[i]<<endl;
+		str[i]=tmps.substr(0,2);							//Ã¿Á½¸ö×Ö·û½Ø¶Ïtmps
+		val[i]=string_to_int(str[i]);						//×ª»»×Ö·û´®ÎªÕûÊı²¢´æÈëÊı×é
+		//cout<<tmps.substr(0,2)<<" ";				//¼ìÑé½Ø¶ÏÇé¿ö
+		tmps=tmps.substr(2,tmps.length());
+		//cout<<str[i]<<"\t"<<val[i]<<endl;		//¼ìÑé×ª»»Çé¿ö
 	}
-		return cs;
+	//cout<<tmps<<endl;					//¼ìÑéĞĞ×Ö·û´®£¬´Ë´¦tmpsÓ¦¸ÃÎª¿Õ
+
+//¼ÆËãĞ£ÑéºÍ
+	for(i=0;i<(n/2);i++)
+		tmp=tmp+val[i];
+	//cout<<tmp<<endl;
+	tmp=~tmp+1;
+	//cout<<tmp<<endl;
+	stringstream ss;
+	ss<<hex<<tmp;							//½«Ê®½øÖÆÕûÊıÊäÈëºó×ªÎªÊ®Áù½øÖÆ
+	ss>>checks;
+	transform(checks.begin(), checks.end(), checks.begin(), toupper);		//×ªĞ¡Ğ´Îª´óĞ´
+	//cout<<tmp<<"\t"<<checks.substr(checks.length()-2,checks.length())<<endl;
+	checks=checks.substr(checks.length()-2,checks.length());
+	return checks;
 }
 
 
-void get_obj(string s)		//è¾“å‡ºhexæ–‡æ¡£
+void get_obj(string se)		//Êä³öhexÎÄµµ
 {
 	ofstream in;
 	Inst inst;
 	int l;
 	string str;
-	l=s.length();
-	//inst.get_checksum(cs);
-	in.open("obj.txt",ios::app); //ios::truncè¡¨ç¤ºåœ¨æ‰“å¼€æ–‡ä»¶å‰å°†æ–‡ä»¶æ¸…ç©ºï¼Œappæ˜¯æ¥ä¸Šï¼Œç”±äºæ˜¯å†™å…¥,æ–‡ä»¶ä¸å­˜åœ¨åˆ™åˆ›å»º
-	in<<":"<<inst.match(s)<<mc<<inst.get_checksum(mc)<<"\n";
+	l=se.length();
+	inst.get_checksum(mc);
+	in.open("obj.txt",ios::app); //ios::trunc±íÊ¾ÔÚ´ò¿ªÎÄ¼şÇ°½«ÎÄ¼şÇå¿Õ£¬appÊÇ½ÓÉÏ£¬ÓÉÓÚÊÇĞ´Èë,ÎÄ¼ş²»´æÔÚÔò´´½¨
+	in<<":"<<inst.match(se)<<"\n";
 	in<<":00000001FF"<<"\n";
 	//in<<":"<<setw(2) <<setfill('0')<<setiosflags(ios::uppercase)<<hex<<machcode<<dec<<addr<<endl;
-	in.close();//å…³é—­æ–‡ä»¶
+	in.close();//¹Ø±ÕÎÄ¼ş
 
 }
 
 FILE *fp_in;
 FILE *fp_out;
 
-//const char *fake[]={	"ORG","END","DB","EQU","DB","DW","DS","BIT"	};			//ä¼ªæŒ‡ä»¤
+//const char *fake[]={	"ORG","END","DB","EQU","DB","DW","DS","BIT"	};			//Î±Ö¸Áî
 
 
 int main()
 {
 	Inst inst;
 	readasm(inst);
-	//inst.int_to_string(9999,5);
+//	inst.int_to_string(256,5);			//¼ìÑéint_to_string
+	//inst.string_to_int("FFF");				//¼ìÑéstring_to_int
 	//inst.get_checksum(mc);
 	get_obj(mc);
 	return 1;

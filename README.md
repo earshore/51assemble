@@ -37,3 +37,8 @@
     1.Submit the first alpha version;
     2.The program is not fully completed, still thinking of function algorithm;
     3.Submit "data.txt" and "HEX.txt";
+    
+    2014/09/20
+    
+    1.Achieve the function "sting_to_int";
+    

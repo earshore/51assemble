@@ -42,3 +42,9 @@
     
     1.Achieve the function "sting_to_int";
     
+    2014/09/21
+    
+    1.Achieve the function "get_checksum";
+    2.Optimize the function "match";
+    3.Basically completed;
+    4.just need to optimize the program later;

@@ -38,9 +38,8 @@ public:
 	string get_checksum(string machc);					//获得校验码
 };
 static int addr=0;				//地址
-static int addr_s=0;
+static int addr_s=0;			//起始地址
 static string mc;				//机器码字符串
-//static string checks;					//用来获取校验和的字符串
 
 void readasm(Inst inst);						//读取源程序
 
@@ -67,9 +66,9 @@ int Inst::get_machcode(string *s)
 		while (getline (in, str)) // str中不包括每行的换行符
 		{
 			//首先判断伪指令
-			if(sc[1]=="ORG")
+			if(sc[1]=="ORG")												//如果是，储存伪指令及其地址
 			{
-				sc[2]=s[2].substr(0,s[2].length()-1);
+				sc[2]=s[2].substr(0,s[2].length()-1);			
 				addr_s=atoi(sc[2].c_str());
 				//cout<<addr_s<<endl;
 				addr=atoi(sc[2].c_str());
@@ -106,7 +105,10 @@ int Inst::get_machcode(string *s)
 					else if((t[i]>='a')&&(t[i]<='f'))
 						tmp = t[i]-'a'+10;
 					else
-						return -1;  /* 出错了 */
+					{
+						cout<<"出错了"<<endl;
+						exit(-1);
+					}
 					result1 = result1*16+tmp;  /* 转成16进制数后加起来 */
 				}
 				tmp=w[0]-'0';
@@ -144,7 +146,6 @@ int Inst::get_machcode(string *s)
 								else
 								{}
 
-								//get_obj();
 								//	cout<<t<<"\t"<<result1<<"\t"<<result2<<"\t"<<addr<<endl;		//输出匹配的指令的机器码和字节长度以及当前地址
 								//cout<<sc[0]<<endl;
 								addr+=width;
@@ -170,7 +171,6 @@ int Inst::get_machcode(string *s)
 								else
 								{}
 
-								//get_obj();
 								//		cout<<t<<"\t"<<result1<<"\t"<<result2<<"\t"<<addr<<endl;	//输出匹配的指令的机器码和字节长度以及当前地址
 								//cout<<sc[0]<<endl;
 								addr+=width;
@@ -198,7 +198,6 @@ int Inst::get_machcode(string *s)
 							else
 							{}
 
-							//get_obj();
 							//	cout<<t<<"\t"<<result1<<"\t"<<result2<<"\t"<<addr<<endl;	//输出匹配的指令的机器码和字节长度以及当前地址
 							//	cout<<sc[0]<<endl;
 							addr+=width;
@@ -226,7 +225,6 @@ int Inst::get_machcode(string *s)
 						else
 						{}
 
-						//get_obj();
 						//		cout<<t<<"\t"<<result1<<"\t"<<result2<<"\t"<<addr<<endl;	//输出匹配的指令的机器码和字节长度以及当前地址
 						//	cout<<sc[0]<<endl;
 						addr+=width;
@@ -445,7 +443,7 @@ string Inst::int_to_string(int t, int n)					//t是数据，n是宽度
 		{}
 	}
 	transform(str.begin(), str.end(), str.begin(), toupper);				//转换为大写
-//	cout<<str<<endl;				//校验输出
+	//	cout<<str<<endl;				//校验输出
 	return str;
 }
 
@@ -489,7 +487,7 @@ string Inst::match(string machc)				//拼接字符串
 	sen.append("00");						//加入数据类型
 	sen.append(machc);						//加入机器码
 	sen.append(get_checksum(machc));
-	cout<<sen<<endl;								//检验前段8个字符
+	//cout<<sen<<endl;								//检验前段8个字符
 	return sen;
 }
 
@@ -519,8 +517,8 @@ string Inst::get_checksum(string machc)			//获得校验和，s是机器码
 	}
 	//cout<<tmps<<endl;					//检验行字符串，此处tmps应该为空
 
-//计算校验和
-	for(i=0;i<(n/2);i++)
+	//计算校验和
+	for(i=0;i<(n/2);i++)					//累加拆开的数组
 		tmp=tmp+val[i];
 	//cout<<tmp<<endl;
 	tmp=~tmp+1;
@@ -530,7 +528,7 @@ string Inst::get_checksum(string machc)			//获得校验和，s是机器码
 	ss>>checks;
 	transform(checks.begin(), checks.end(), checks.begin(), toupper);		//转小写为大写
 	//cout<<tmp<<"\t"<<checks.substr(checks.length()-2,checks.length())<<endl;
-	checks=checks.substr(checks.length()-2,checks.length());
+	checks=checks.substr(checks.length()-2,checks.length());					//截取最后两位字符
 	return checks;
 }
 
@@ -545,7 +543,7 @@ void get_obj(string se)		//输出hex文档
 	inst.get_checksum(mc);
 	in.open("obj.txt",ios::app); //ios::trunc表示在打开文件前将文件清空，app是接上，由于是写入,文件不存在则创建
 	in<<":"<<inst.match(se)<<"\n";
-	in<<":00000001FF"<<"\n";
+
 	//in<<":"<<setw(2) <<setfill('0')<<setiosflags(ios::uppercase)<<hex<<machcode<<dec<<addr<<endl;
 	in.close();//关闭文件
 
@@ -560,10 +558,23 @@ FILE *fp_out;
 int main()
 {
 	Inst inst;
+	ofstream in;
 	readasm(inst);
-//	inst.int_to_string(256,5);			//检验int_to_string
+	string str;
+	//	inst.int_to_string(256,5);			//检验int_to_string
 	//inst.string_to_int("FFF");				//检验string_to_int
-	//inst.get_checksum(mc);
-	get_obj(mc);
+	//inst.get_checksum(mc);				//检验get_checksum
+	while(mc.length()>16)					//如果机器码串太长，超过16字节就分割
+	{
+		str=mc.substr(0,16);
+		mc=mc.substr(16,mc.length());
+		addr_s+=16;
+		get_obj(str);
+	}
+	str=mc;
+	addr_s+=mc.length();
+	get_obj(str);
+	in.open("obj.txt",ios::app);
+	in<<":00000001FF"<<"\n";			//添加结束语句
 	return 1;
 }

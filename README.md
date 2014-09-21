@@ -48,3 +48,8 @@
     2.Optimize the function "match";
     3.Basically completed;
     4.just need to optimize the program later;
+    
+    2014/09/22
+    
+    1.Optimize the function "get_obj", then it can output hexcode line by line;
+    2.Fix an error in the function "get_machcode";

@@ -53,3 +53,5 @@
     
     1.Optimize the function "get_obj", then it can output hexcode line by line;
     2.Fix an error in the function "get_machcode";
+    3.Optimize the way to memory labeltable;
+    4.Delete some unnecessary parts;

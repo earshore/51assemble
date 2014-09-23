@@ -34,14 +34,22 @@ public:
 	int string_to_int(string s);								//字符串转整数
 	string get_checksum(string machc);				//获得校验码
 };
+
 static int addr=0;						//地址
-static int addr_s=0;					//起始地址
+static int addr_s=0;					//起始地址，可用于输出文档时
+static int lnum=0;						//指令行数 
+static int laddr[100];					//每行指令所在地址
+static string firsta[100];				//第一次汇编得到字符串
 static string mc="\0";				//机器码字符串
 static string sn[5];						//记录源文件每行指令的每个部分
 static int num=0;						//记录标号表序号
-static string lab[100];				//用于建立标号表时存储标号
-static string lab_add[100];			//用于建立标号表时储存标号代表的地址
+static string sa[100];					//标号表存储标号
+static int sad[100];					//标号表储存地址
+
+static int lab_addr[100];			//用于建立标号表时储存标号代表的地址
 void readasm(Inst inst);				//读取源程序
+
+string replacelab(string machc, const string oldc, const string newc);		//替换第一个目标字符串
 
 int Inst::get_machcode(string *s)											//获取指令对应的机器码
 {
@@ -67,6 +75,7 @@ int Inst::get_machcode(string *s)											//获取指令对应的机器码
 				sc[2]=s[2].substr(0,s[2].length()-1);			
 				addr_s=string_to_int(sc[2]);
 				addr=addr_s;
+				laddr[lnum]=addr;
 				//cout<<addr<<endl;
 			}
 			else if(sc[1]=="END")
@@ -103,31 +112,50 @@ int Inst::get_machcode(string *s)											//获取指令对应的机器码
 						st[4]=str3.substr(0,str3.find(":"));
 						str3=str3.substr(str3.find(":")+1,str3.length());
 						if((st[1]==sc[1])&&(st[2]==sc[2])&&(st[3]==sc[3])&&(st[4]==sc[4]))		//匹配
+						{firsta[lnum]=str1;
+						//建立标号表
+						if(sc[0]!="\0")
 						{
-							//建立标号表
-							if(sc[0]!="\0")
+							lab_addr[lnum]=addr;
+							sa[num]=sc[0];
+							sad[num]=addr;
+							num++;
+						}
+						else
+						{}
+						for(int i=2;i<=4;i++)
+						{
+							if(sc[i].find("arg")!=-1)
 							{
-								lab[num]=sc[0];
-								lab_add[num]=int_to_string(addr,4);									//整型数转字符串					
-								//	cout<<num<<"\t"<<table.lab[num]<<"\t"<<table.lab_add[num]<<endl;
-								num++;
-								//cout<<la[0]<<"\t"<<la[1]<<endl;
+								if((sn[i][0]=='#')&&(sn[i][sn[i].length()-1]=='H'))
+								{
+									str1+=sn[i].substr(1,sn[i].length()-2);
+									firsta[lnum]=str1;
+									//cout<<sc[i]<<"\t"<<sn[i]<<"\t";
+								}
+								else if(sn[i][sn[i].length()-1]=='H')
+								{
+									str1+=sn[i].substr(0,sn[i].length()-1);
+									firsta[lnum]=str1;
+									//cout<<sc[i]<<"\t"<<sn[i]<<"\t";
+								}
+								else
+								{
+									str1+=sn[i];
+									firsta[lnum]=str1;
+									//cout<<sc[i]<<"\t"<<sn[i]<<"\t";
+								}
+								//		cout<<str1<<endl;
 							}
-							else
-							{}
 
-							//for(int i=0;i<=4;i++)															//检验sn[]
-							//{
-							//	cout<<sn[i]<<"\t";
-							//}
-							//cout<<endl;
-
-							//cout<<str1<<"\t"<<result1<<"\t"<<result2<<"\t"<<addr<<endl;		//输出匹配的指令的机器码和字节长度以及当前地址
-							//cout<<sc[0]<<endl;
-							addr+=width;
-							mc+=str1;
-							//cout<<mc<<endl;															//检验机器码串
-							return machcode;
+						}							
+						laddr[lnum]=addr;
+						lnum++;
+						//cout<<laddr[lnum]<<endl;
+						addr+=width;
+						mc+=str1;
+						//	cout<<mc<<endl;															//检验机器码串
+						return machcode;
 						}
 						else																							//	不匹配
 						{}
@@ -135,31 +163,52 @@ int Inst::get_machcode(string *s)											//获取指令对应的机器码
 					else																								//有两个操作数
 					{
 						if((st[1]==sc[1])&&(st[2]==sc[2])&&(st[3]==sc[3]))					//匹配
-						{	
-							//建立标号表
-							if(sc[0]!="\0")
+						{	firsta[lnum]=str1;
+						//建立标号表
+						if(sc[0]!="\0")
+						{
+							lab_addr[lnum]=addr;	
+							sa[num]=sc[0];
+							sad[num]=addr;
+							num++;
+						}
+						else
+						{}
+						//cout<<str1<<"\t"<<result1<<"\t"<<result2<<"\t"<<addr<<endl;	//输出匹配的指令的机器码和字节长度以及当前地址
+						//cout<<sc[0]<<endl;
+						for(int i=2;i<=4;i++)
+						{
+							if(sc[i].find("arg")!=-1)
 							{
-								lab[num]=sc[0];
-								lab_add[num]=int_to_string(addr,4);									//整型数转字符串
-								//cout<<num<<"\t"<<table.lab[num]<<"\t"<<table.lab_add[num]<<endl;
-								num++;
-								//		cout<<la[0]<<"\t"<<la[1]<<endl;
+								if((sn[i][0]=='#')&&sn[i][sn[i].length()-1]=='H')
+								{
+									str1+=sn[i].substr(1,sn[i].length()-2);
+									firsta[lnum]=str1;
+									//cout<<sc[i]<<"\t"<<sn[i]<<"\t";
+								}
+								else if(sn[i][sn[i].length()-1]=='H')
+								{
+									str1+=sn[i].substr(0,sn[i].length()-1);
+									firsta[lnum]=str1;
+									//cout<<sc[i]<<"\t"<<sn[i]<<"\t";
+								}
+								else
+								{
+									str1+=sn[i];
+									firsta[lnum]=str1;
+									//cout<<sc[i]<<"\t"<<sn[i]<<"\t";
+								}
+								//	cout<<str1<<endl;
 							}
-							else
-							{}
 
-							//for(int i=0;i<=4;i++)							//检验sn[]
-							//{
-							//	cout<<sn[i]<<"\t";
-							//}
-							//cout<<endl;
-
-							//cout<<str1<<"\t"<<result1<<"\t"<<result2<<"\t"<<addr<<endl;	//输出匹配的指令的机器码和字节长度以及当前地址
-							//cout<<sc[0]<<endl;
-							addr+=width;
-							mc+=str1;
-							//cout<<mc<<endl;							//检验机器码串
-							return machcode;
+						}							
+						laddr[lnum]=addr;
+						lnum++;
+						//	cout<<laddr[lnum]<<endl;
+						addr+=width;
+						mc+=str1;
+						//	cout<<mc<<endl;							//检验机器码串
+						return machcode;
 						}
 						else															//	不匹配
 						{}
@@ -168,32 +217,51 @@ int Inst::get_machcode(string *s)											//获取指令对应的机器码
 				else																	//只有一个操作数
 				{
 					if((st[1]==sc[1])&&st[2]==sc[2])					//匹配
+					{firsta[lnum]=str1;
+					//建立标号表
+					if(sc[0]!="\0")
 					{
+						lab_addr[lnum]=addr;	
+						sa[num]=sc[0];
+						sad[num]=addr;
+						num++;
+					}
+					else
+					{}
 
-						//建立标号表
-						if(sc[0]!="\0")
+					for(int i=2;i<=4;i++)
+					{
+						if(sc[i].find("arg")!=-1)
 						{
-							lab[num]=sc[0];
-							lab_add[num]=int_to_string(addr,4);			//整型数转字符串
-							//cout<<num<<"\t"<<table.lab[num]<<"\t"<<table.lab_add[num]<<endl;
-							num++;
-							//		cout<<la[0]<<"\t"<<la[1]<<endl;
+							if((sn[i][0]=='#')&&sn[i][sn[i].length()-2]=='H')
+							{
+								str1+=sn[i].substr(1,sn[i].length()-1);
+								firsta[lnum]=str1;
+								//cout<<sc[i]<<"\t"<<sn[i]<<"\t";
+							}
+							else if(sn[i][sn[i].length()-1]=='H')
+							{
+								str1+=sn[i].substr(0,sn[i].length()-1);
+								firsta[lnum]=str1;
+								//cout<<sc[i]<<"\t"<<sn[i]<<"\t";
+							}
+							else
+							{
+								str1+=sn[i];
+								firsta[lnum]=str1;
+								//cout<<sc[i]<<"\t"<<sn[i]<<"\t";
+							}
+							//	cout<<str1<<endl;
 						}
-						else
-						{}
 
-						//for(int i=0;i<=4;i++)									//检验sn[]
-						//{
-						//	cout<<sn[i]<<"\t";
-						//}
-						//cout<<endl;
-
-						//cout<<str1<<"\t"<<result1<<"\t"<<result2<<"\t"<<addr<<endl;	//输出匹配的指令的机器码和字节长度以及当前地址
-						//	cout<<sc[0]<<endl;
-						addr+=width;
-						mc+=str1;
-						//cout<<mc<<endl;								//检验机器码串
-						return machcode;
+					}							
+					laddr[lnum]=addr;
+					lnum++;
+					//	cout<<laddr[lnum]<<endl;
+					addr+=width;
+					mc+=str1;
+					//	cout<<mc<<endl;									//检验机器码串
+					return machcode;
 					}
 					else																//	不匹配
 					{}		
@@ -202,61 +270,71 @@ int Inst::get_machcode(string *s)											//获取指令对应的机器码
 			else																		//没有操作数
 			{
 				if(st[1]==sc[1])													//匹配									
-				{					
-
-					//建立标号表
-					if(sc[0]!="\0")
+				{					firsta[lnum]=str1;
+				//建立标号表
+				if(sc[0]!="\0")
+				{
+					lab_addr[lnum]=addr;	
+					sa[num]=sc[0];
+					sad[num]=addr;
+					num++;
+				}
+				else
+				{}
+				for(int i=2;i<=4;i++)
+				{
+					if(sc[i].find("arg")!=-1)
 					{
-						lab[num]=sc[0];
-						lab_add[num]=int_to_string(addr,4);			//整型数转字符串
-						//cout<<num<<"\t"<<table.lab[num]<<"\t"<<table.lab_add[num]<<endl;
-						num++;
-						//		cout<<la[0]<<"\t"<<la[1]<<endl;
+						if((sn[i][0]=='#')&&sn[i][sn[i].length()-2]=='H')
+						{
+							str1+=sn[i].substr(1,sn[i].length()-1);
+							firsta[lnum]=str1;
+							//cout<<sc[i]<<"\t"<<sn[i]<<"\t";
+						}
+						else if(sn[i][sn[i].length()-1]=='H')
+						{
+							str1+=sn[i].substr(0,sn[i].length()-1);
+							firsta[lnum]=str1;
+							//cout<<sc[i]<<"\t"<<sn[i]<<"\t";
+						}
+						else
+						{
+							str1+=sn[i];
+							firsta[lnum]=str1;
+							//cout<<sc[i]<<"\t"<<sn[i]<<"\t";
+						}
+						//cout<<str1<<endl;
 					}
-					else
-					{}
 
-					//for(int i=0;i<=4;i++)										//检验sn[]
-					//{
-					//	cout<<sn[i]<<"\t";
-					//}
-					//cout<<endl;
-
-					//cout<<str1<<"\t"<<result1<<"\t"<<result2<<"\t"<<addr<<endl;	//输出匹配的指令的机器码和字节长度以及当前地址
-					//	cout<<sc[0]<<endl;
-					addr+=width;
-					mc+=str1;
-					//cout<<mc<<endl;									//检验机器码串
-					return machcode;
+				}							
+				laddr[lnum]=addr;
+				lnum++;
+				//		cout<<laddr[lnum]<<endl;
+				addr+=width;
+				mc+=str1;
+				//	cout<<mc<<endl;										//检验机器码串
+				return machcode;
 				}
 				else																	//不匹配
 				{}
 			}
-			//for(int i=0;i<num;i++)
-			//		cout<<table.lab[i]<<table.lab_add[i]<<endl;
-
 		}//while结束
 
-		//for(int i=0;i<num;i++)
-		//		cout<<lab[i]<<"\t"<<lab_add[i]<<endl;
+		/*	for(int i=0;i<num;i++)
+		cout<<sa[i]<<"\t"<<sad[i]<<endl;*/
 
-		//cout<<la[0]<<"\t"<<la[1]<<endl;							//输出伪指令表
 		//源文件中没有匹配的指令
 		//for(int i=0;i<=4;i++)
 		//{
 		//	cout<<s[i]<<"\t";
 		//}
 		//cout<<"这条不匹配"<<endl;
-
 	}
-
 	else // 没有该文件
 	{
 		cout << "打开文件" << filename << "出错！" << endl;
 		exit(-1);
 	}
-
-
 }//get_machcode结束
 
 string Inst::get_mne(string s)
@@ -277,7 +355,6 @@ string Inst::get_mne(string s)
 		return op_mne;
 	}
 }
-
 
 string Inst::get_op_num(string s, int i)
 {
@@ -305,123 +382,6 @@ inline string Inst::get_label(string s)
 	label=s.substr(0,i);
 	//	cout<<"标号:"<<label<<endl;
 	return label;
-
-}
-
-
-void readasm(Inst inst)
-{
-	string filename = "data.txt";					//源文件
-	ifstream fin(filename.c_str());  
-	if( !fin )													//防错
-	{   
-		cout << "打开文件" << filename << "出错！" << endl;   
-		exit(-1);
-	}
-	string str,s[5],tmp[5];								//str储存读取的每行字符串，s[]保存截断的每部分
-	int i;
-	while(std::getline(fin,str))
-	{
-
-		if(str.find(":")!=-1)								//如果有标号
-		{
-			s[0]=inst.get_label(str);					//获取标号
-			str=str.substr(str.find(":")+1,str.length());			//截取":"后的字符串
-		}
-		else
-		{
-			s[0]="\0";
-		}
-		s[1]=inst.get_mne(str);											//先获取助记符
-		if(str.find(" ")!=-1)													//如果有操作数
-		{
-			str=str.substr(str.find(" ")+1,str.length());			//截取" "后的字符串
-			if(str.find(",")!=-1)												//如果有不止一个操作数
-			{
-				s[2]=inst.get_op_num(str,0);							//获取第一操作数
-				str=str.substr(str.find(",")+1,str.length());		//截取","后的字符串
-				if(str.find(",")!=-1)											//如果有三个操作数
-				{
-					s[3]=inst.get_op_num(str,1);						//获取第二操作数
-					str=str.substr(str.find(",")+1,str.length());	//截取","后的字符串
-					s[4]=inst.get_op_num(str,2);						//获取第三操作数
-				}
-				else
-				{
-					s[4]="\0";
-					s[3]=inst.get_op_num(str,1);						//获取第二操作数
-
-				}
-			}
-			else
-			{
-				s[3]="\0";
-				s[4]="\0";
-				s[2]=inst.get_op_num(str,0);							//获取第一操作数
-			}
-		}
-		else
-		{
-			s[2]="\0";
-			s[3]="\0";
-			s[4]="\0";
-		}
-		for(i=0;i<=4;i++)
-			sn[i]=s[i];
-		for(i=2;i<=4;i++)
-		{
-			if(sn[i]!="\0")
-			{
-				//将地址转换为arg，但是保留原数组，方便匹配HEX.txt内的每一行指令
-				if((sn[i]=="A")||(sn[i]=="B")||(sn[i]=="C")||(sn[i]=="AB")||(sn[i]=="DPTR")||(sn[i][0]=='R'))
-				{}
-				else if((sn[i][0]=='@')||(sn[i][0]=='/'))
-				{}
-				else if((sn[1]=="ORG")||(sn[1]=="END"))
-				{}
-				else
-				{
-					if(sn[i][0]=='#')
-					{
-						sn[i]="#arg";
-					}
-					else if(sn[i][sn[i].length()-1]=='H')
-					{
-						sn[i]="arg";
-					}
-					else
-					{
-						sn[i]="arg";
-					}
-				}
-			}
-			else
-			{}
-
-		}
-
-		//for(i=0;i<=4;i++)							//检验sn[]
-		//{
-		//		cout<<sn[i]<<"\t";
-		//}
-		//cout<<endl;
-
-		for(i=0;i<=4;i++)
-		{
-			tmp[i]=sn[i];
-			sn[i]=s[i];
-			s[i]=tmp[i];
-		}
-
-		//for(i=0;i<=4;i++)							//检验s[]
-		//{
-		//	cout<<sn[i]<<"\t";
-		//}
-		//cout<<endl;
-
-		inst.get_machcode(s);
-	}
-
 }
 
 //将十进制整数转为十六进制字符串，可以设置任意长度，方便地址和机器码两种长度
@@ -465,7 +425,7 @@ int Inst::string_to_int(string s)					//十六进制字符串转成十进制整数
 			tmp = t[i]-'a'+10;
 		else
 		{
-			cout<<"出错了"<<endl;
+			cout<<s<<"出错了"<<endl;
 			exit(-1);
 			//return -1;  /* 出错了 */				 //这里不能返回-1！！！
 		}
@@ -483,8 +443,6 @@ string Inst::match(string machc)				//拼接字符串
 	w=machc.length();								//计算数据长度域
 	tmp=int_to_string(w,2);							//转换数据长度域为字符串
 	sen.append(tmp);									//加入数据长度域
-	//cout<<addr_s<<endl;
-	//cout<<addr<<endl;
 	tmp=int_to_string(addr_s,4);					//将起始地址转换为字符串
 	sen.append(tmp);									//加入起始地址
 	sen.append("00");									//加入数据类型
@@ -535,6 +493,116 @@ string Inst::get_checksum(string machc)		//获得校验和，s是机器码
 	return checks;
 }
 
+void readasm(Inst inst)
+{
+	string filename = "data.txt";					//源文件
+	ifstream fin(filename.c_str());  
+	if( !fin )													//防错
+	{   
+		cout << "打开文件" << filename << "出错！" << endl;   
+		exit(-1);
+	}
+	string str,s[5],tmp[5];								//str储存读取的每行字符串，s[]保存截断的每部分
+	int i;
+	while(std::getline(fin,str))
+	{
+		if(str.find(":")!=-1)								//如果有标号
+		{
+			s[0]=inst.get_label(str);					//获取标号
+			str=str.substr(str.find(":")+1,str.length());			//截取":"后的字符串
+		}
+		else
+		{
+			s[0]="\0";
+		}
+		s[1]=inst.get_mne(str);											//先获取助记符
+		if(str.find(" ")!=-1)													//如果有操作数
+		{
+			str=str.substr(str.find(" ")+1,str.length());			//截取" "后的字符串
+			if(str.find(",")!=-1)												//如果有不止一个操作数
+			{
+				s[2]=inst.get_op_num(str,0);							//获取第一操作数
+				str=str.substr(str.find(",")+1,str.length());		//截取","后的字符串
+				if(str.find(",")!=-1)											//如果有三个操作数
+				{
+					s[3]=inst.get_op_num(str,1);						//获取第二操作数
+					str=str.substr(str.find(",")+1,str.length());	//截取","后的字符串
+					s[4]=inst.get_op_num(str,2);						//获取第三操作数
+				}
+				else
+				{
+					s[4]="\0";
+					s[3]=inst.get_op_num(str,1);						//获取第二操作数
+				}
+			}
+			else
+			{
+				s[3]="\0";
+				s[4]="\0";
+				s[2]=inst.get_op_num(str,0);							//获取第一操作数
+			}
+		}
+		else
+		{
+			s[2]="\0";
+			s[3]="\0";
+			s[4]="\0";
+		}
+		for(i=0;i<=4;i++)
+			sn[i]=s[i];
+		for(i=2;i<=4;i++)
+		{
+			if(sn[i]!="\0")
+			{
+				//将地址转换为arg，但是保留原数组，方便匹配HEX.txt内的每一行指令
+				if((sn[i]=="A")||(sn[i]=="B")||(sn[i]=="C")||(sn[i]=="AB")||(sn[i]=="DPTR")||(sn[i][0]=='R'))
+				{}
+				else if((sn[i][0]=='@')||(sn[i][0]=='/'))
+				{}
+				else if((sn[1]=="ORG")||(sn[1]=="END"))
+				{}
+				else
+				{
+					if(sn[i][0]=='#')
+					{
+						sn[i]="#arg";
+					}
+					else if(sn[i][sn[i].length()-1]=='H')
+					{
+						sn[i]="arg";
+					}
+					else
+					{
+						sn[i]="arg";
+					}
+				}
+			}
+			else
+			{}
+		}
+
+		//for(i=0;i<=4;i++)							//检验sn[]
+		//{
+		//		cout<<sn[i]<<"\t";
+		//}
+		//cout<<endl;
+
+		for(i=0;i<=4;i++)
+		{
+			tmp[i]=sn[i];
+			sn[i]=s[i];
+			s[i]=tmp[i];
+		}
+
+		//for(i=0;i<=4;i++)							//检验s[]
+		//{
+		//	cout<<sn[i]<<"\t";
+		//}
+		//cout<<endl;
+		inst.get_machcode(s);
+	}
+}
+
 
 void get_obj(string se)									//输出hex文档
 {
@@ -548,8 +616,17 @@ void get_obj(string se)									//输出hex文档
 	in<<":"<<inst.match(se)<<"\n";
 	//in<<":"<<setw(2) <<setfill('0')<<setiosflags(ios::uppercase)<<hex<<machcode<<dec<<addr<<endl;
 	in.close();													//关闭文件
-
 }
+
+string replacelab(string machc, const string oldc, const string newc)									//替换字符串
+{
+	string::size_type   pos(0);   
+	if(   (pos=machc.find(oldc,pos))!=string::npos   )   
+		machc.replace(pos,oldc.length(),newc);   
+	else
+	{}
+	return machc;   
+} 
 
 FILE *fp_in;
 FILE *fp_out;
@@ -560,11 +637,38 @@ int main()
 {
 	Inst inst;
 	ofstream in;
+	stringstream ss;
 	readasm(inst);
+	string ta;
+	int i=0,j=0,t;
+	//cout<<mc<<endl;
+	for(i=0;i<num;i++)
+	{	
+		int n=0;
+		for(j=0;j<lnum;j++)
+		{
+			if(firsta[j].find(sa[i])!=-1)
+			{
+				t=~(laddr[j]-sad[i])-n-1;
+				//cout<<laddr[j]<<"\t"<<sad[i]<<endl;
+				ta=inst.int_to_string(t,16);										//将十进制整数输入后转为十六进制
+				//cout<<sa[i]<<"\t"<<t<<"\t"<<ta<<endl;
+				ta=ta.substr(ta.length()-2,ta.length());
+				//cout<<sa[i]<<"\t"<<t<<"\t"<<ta<<endl;
+				mc=replacelab(mc,sa[i],ta);
+				//cout<<i<<"\t"<<j<<"\t"<<sa[i]<<endl;
+				n++;
+			}
+			else
+			{}
+		}
+	}
+	//cout<<mc<<endl;
 	string str;
 	//	inst.int_to_string(256,5);			//检验int_to_string
 	//inst.string_to_int("FFF");				//检验string_to_int
 	//inst.get_checksum(mc);				//检验get_checksum
+
 	while(mc.length()>16)					//如果机器码串太长，超过16字节就分割
 	{
 		str=mc.substr(0,16);

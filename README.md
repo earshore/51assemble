@@ -61,3 +61,4 @@
     1.Owning to the whole night coding, the program just elevate to an beta version;
     2.Add the function "replacelab";
     3.The only leaving problem is that dummy orders are not processed effectively; 
+    4.Delete most explanatory notes,  optimize some misleading variable name;

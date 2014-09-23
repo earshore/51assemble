@@ -55,3 +55,9 @@
     2.Fix an error in the function "get_machcode";
     3.Optimize the way to memory labeltable;
     4.Delete some unnecessary parts;
+    
+    2014/09/23
+    
+    1.Owning to the whole night coding, the program just elevate to an beta version;
+    2.Add the function "replacelab";
+    3.The only leaving problem is that dummy orders are not processed effectively; 
